@@ -53,17 +53,12 @@ void* producerHandler(void* tid) {
   while(true) {
     sleep(2);
 
-    struct sembuf sops[2];
-		
-		sops[1].sem_num = 1;
-		sops[1].sem_op = -1;
-		sops[1].sem_flg = 0;
+    struct sembuf sops[1];
 
     sops[0].sem_num = 0; 
 		sops[0].sem_op = -1;
 		sops[0].sem_flg = 0;
-
-    semop(semid, sops, 2);
+    semop(semid, sops, 1);
 
     string randomMessage = generateRandomString();
 
@@ -75,12 +70,7 @@ void* producerHandler(void* tid) {
     sops[0].sem_num = 0;
 		sops[0].sem_op = 1;
 		sops[0].sem_flg = 0;
-
-    sops[1].sem_num = 2;
-		sops[1].sem_op = 1;
-		sops[1].sem_flg = 0;
-
-    semop(semid, sops, 2);
+    semop(semid, sops, 1);
 
     sleep(3);
   }
@@ -93,15 +83,10 @@ void* consumerHandler(void* tid) {
 
     struct sembuf sops[2];
 		
-		sops[1].sem_num = 2;
-		sops[1].sem_op = -1;
-		sops[1].sem_flg = 0;
-
-    sops[0].sem_num = 0;
+		sops[0].sem_num = 0; 
 		sops[0].sem_op = -1;
 		sops[0].sem_flg = 0;
-
-    semop(semid, sops, 2);
+    semop(semid, sops, 1);
 
     cout << "Consumer " + to_string(*((int *)tid)) + "\n";
 
@@ -116,12 +101,7 @@ void* consumerHandler(void* tid) {
     sops[0].sem_num = 0;
 		sops[0].sem_op = 1;
 		sops[0].sem_flg = 0;
-
-    sops[1].sem_num = 1;
-		sops[1].sem_op = 1;
-		sops[1].sem_flg = 0;
-
-    semop(semid, sops, 2);
+    semop(semid, sops, 1);
 
     sleep(3);
   }
@@ -140,7 +120,6 @@ void createThread(
 
   threadsIndexes.push_back(index);
   threads.push_back(thread);
-
   if (pthread_create(&(*thread), NULL, threadHandler, index)) {
     cout << "\n\n" + threadType + " creating ERROR!!!\n\n" << endl;
 
@@ -202,14 +181,10 @@ int main(int argc, char** argv) {
   key_t key = 10;
 	int flags = IPC_CREAT | 0666;
 	
-	semid = semget(key, 3, flags);
+	semid = semget(key, 1, flags);
 
   arg.val = 1;
 	semctl(semid, 0, SETVAL, arg);
-	arg.val = 10;
-	semctl(semid, 1, SETVAL, arg);
-	arg.val = 0;
-	semctl(semid, 2, SETVAL, arg);
 
   while(true) {
     cout << "\nPress key...\t";
